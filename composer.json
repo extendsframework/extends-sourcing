@@ -1,0 +1,33 @@
+{
+    "name": "extendsframework/extends-sourcing",
+    "description": "Sourcing component from Extends Framework.",
+    "homepage": "https://github.com/extendsframework/extends-sourcing",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Vincent van Dijk",
+            "email": "vincent@extends.nl",
+            "homepage": "https://www.extends.nl/"
+        }
+    ],
+    "require": {
+        "php": ">=7.1",
+        "extendsframework/extends-command": "dev-master",
+        "extendsframework/extends-event": "dev-master",
+        "extendsframework/extends-message": "dev-master"
+    },
+    "require-dev": {
+        "php": ">=7.1",
+        "phpunit/phpunit": "6.4.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "ExtendsFramework\\Sourcing\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ExtendsFramework\\Sourcing\\": "test/"
+        }
+    }
+}
