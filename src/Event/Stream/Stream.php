@@ -15,9 +15,19 @@ class Stream implements StreamInterface
     protected $messages = [];
 
     /**
+     * Stream constructor.
+     *
+     * @param DomainEventMessageInterface[] $messages
+     */
+    public function __construct(array $messages)
+    {
+        $this->messages = $messages;
+    }
+
+    /**
      * @inheritDoc
      */
-    public function current()
+    public function current(): DomainEventMessageInterface
     {
         return current($this->messages);
     }
@@ -25,7 +35,7 @@ class Stream implements StreamInterface
     /**
      * @inheritDoc
      */
-    public function next()
+    public function next(): void
     {
         next($this->messages);
     }
@@ -33,7 +43,7 @@ class Stream implements StreamInterface
     /**
      * @inheritDoc
      */
-    public function key()
+    public function key(): ?int
     {
         return key($this->messages);
     }
@@ -41,7 +51,7 @@ class Stream implements StreamInterface
     /**
      * @inheritDoc
      */
-    public function valid()
+    public function valid(): bool
     {
         return $this->key() !== null;
     }
@@ -49,7 +59,7 @@ class Stream implements StreamInterface
     /**
      * @inheritDoc
      */
-    public function rewind()
+    public function rewind(): void
     {
         reset($this->messages);
     }
@@ -57,21 +67,8 @@ class Stream implements StreamInterface
     /**
      * @inheritDoc
      */
-    public function count()
+    public function count(): int
     {
         return count($this->messages);
-    }
-
-    /**
-     * Add domain event message to stream.
-     *
-     * @param DomainEventMessageInterface $domainEventMessage
-     * @return Stream
-     */
-    public function addMessage(DomainEventMessageInterface $domainEventMessage): Stream
-    {
-        $this->messages[] = $domainEventMessage;
-
-        return $this;
     }
 }

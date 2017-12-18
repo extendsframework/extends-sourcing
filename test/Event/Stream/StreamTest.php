@@ -13,7 +13,7 @@ class StreamTest extends TestCase
      *
      * Test that stream can be iterated.
      *
-     * @covers \ExtendsFramework\Sourcing\Event\Stream\Stream::addMessage()
+     * @covers \ExtendsFramework\Sourcing\Event\Stream\Stream::__construct()
      * @covers \ExtendsFramework\Sourcing\Event\Stream\Stream::current()
      * @covers \ExtendsFramework\Sourcing\Event\Stream\Stream::next()
      * @covers \ExtendsFramework\Sourcing\Event\Stream\Stream::key()
@@ -24,14 +24,11 @@ class StreamTest extends TestCase
     {
         $message = $this->createMock(DomainEventMessageInterface::class);
 
-        /**
-         * @var DomainEventMessageInterface $message
-         */
-        $stream = new Stream();
-        $stream
-            ->addMessage($message)
-            ->addMessage($message)
-            ->addMessage($message);
+        $stream = new Stream([
+            $message,
+            $message,
+            $message,
+        ]);
 
         foreach ($stream as $domainEventMessage) {
             $this->assertSame($message, $domainEventMessage);
@@ -43,21 +40,18 @@ class StreamTest extends TestCase
      *
      * Test that count will return correct value.
      *
-     * @covers \ExtendsFramework\Sourcing\Event\Stream\Stream::addMessage()
+     * @covers \ExtendsFramework\Sourcing\Event\Stream\Stream::__construct()
      * @covers \ExtendsFramework\Sourcing\Event\Stream\Stream::count()
      */
     public function testCount(): void
     {
         $message = $this->createMock(DomainEventMessageInterface::class);
 
-        /**
-         * @var DomainEventMessageInterface $message
-         */
-        $stream = new Stream();
-        $stream
-            ->addMessage($message)
-            ->addMessage($message)
-            ->addMessage($message);
+        $stream = new Stream([
+            $message,
+            $message,
+            $message,
+        ]);
 
         $this->assertSame(3, $stream->count());
     }
