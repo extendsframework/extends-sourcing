@@ -8,4 +8,17 @@ use Iterator;
 
 interface StreamInterface extends Iterator, Countable
 {
+    /**
+     * Get aggregate identifier.
+     *
+     * @return string
+     */
+    public function getAggregateId(): string;
+
+    /**
+     * Get aggregate version.
+     *
+     * @return int
+     */
+    public function getVersion(): int;
 }

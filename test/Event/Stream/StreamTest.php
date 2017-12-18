@@ -9,6 +9,23 @@ use PHPUnit\Framework\TestCase;
 class StreamTest extends TestCase
 {
     /**
+     * Get methods.
+     *
+     * Test that get methods will return correct values.
+     *
+     * @covers \ExtendsFramework\Sourcing\Event\Stream\Stream::__construct()
+     * @covers \ExtendsFramework\Sourcing\Event\Stream\Stream::getAggregateId()
+     * @covers \ExtendsFramework\Sourcing\Event\Stream\Stream::getVersion()
+     */
+    public function testGetMethods(): void
+    {
+        $stream = new Stream('foo', 33, []);
+
+        $this->assertSame('foo', $stream->getAggregateId());
+        $this->assertSame(33, $stream->getVersion());
+    }
+
+    /**
      * Iterate.
      *
      * Test that stream can be iterated.
@@ -24,7 +41,7 @@ class StreamTest extends TestCase
     {
         $message = $this->createMock(DomainEventMessageInterface::class);
 
-        $stream = new Stream([
+        $stream = new Stream('foo', 33, [
             $message,
             $message,
             $message,
@@ -47,7 +64,7 @@ class StreamTest extends TestCase
     {
         $message = $this->createMock(DomainEventMessageInterface::class);
 
-        $stream = new Stream([
+        $stream = new Stream('foo', 33, [
             $message,
             $message,
             $message,

@@ -8,6 +8,20 @@ use ExtendsFramework\Sourcing\Event\Message\DomainEventMessageInterface;
 class Stream implements StreamInterface
 {
     /**
+     * Aggregate identifier.
+     *
+     * @var string
+     */
+    protected $aggregateId;
+
+    /**
+     * Aggregate version.
+     *
+     * @var int
+     */
+    protected $version;
+
+    /**
      * Domain event messages.
      *
      * @var DomainEventMessageInterface[]
@@ -17,11 +31,31 @@ class Stream implements StreamInterface
     /**
      * Stream constructor.
      *
+     * @param string                        $aggregateId
+     * @param int                           $version
      * @param DomainEventMessageInterface[] $messages
      */
-    public function __construct(array $messages)
+    public function __construct(string $aggregateId, int $version, array $messages)
     {
+        $this->aggregateId = $aggregateId;
+        $this->version = $version;
         $this->messages = $messages;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getAggregateId(): string
+    {
+        return $this->aggregateId;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getVersion(): int
+    {
+        return $this->version;
     }
 
     /**
