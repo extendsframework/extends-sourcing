@@ -11,13 +11,14 @@
         }
     ],
     "require": {
-        "php": ">=7.1",
+        "php": ">=7.2",
+        "extendsframework/extends-serializer": "dev-master",
         "extendsframework/extends-command": "dev-master",
         "extendsframework/extends-event": "dev-master",
         "extendsframework/extends-message": "dev-master"
     },
     "require-dev": {
-        "php": ">=7.1",
+        "php": ">=7.2",
         "phpunit/phpunit": "6.4.*"
     },
     "autoload": {
