@@ -10,4 +10,8 @@
             <directory suffix=".php">./src</directory>
         </whitelist>
     </filter>
+    <php>
+        <var name="MONGO_URI" value="mongodb://localhost:27017"/>
+        <var name="MONGO_NAMESPACE" value="extends_sourcing.event_store"/>
+    </php>
 </phpunit>
