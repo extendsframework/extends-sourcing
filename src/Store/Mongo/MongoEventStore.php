@@ -17,6 +17,7 @@ use MongoDB\BSON\UTCDateTime;
 use MongoDB\Driver\BulkWrite;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\Query;
+use MongoDB\Driver\WriteConcern;
 
 class MongoEventStore implements EventStoreInterface
 {
@@ -85,7 +86,7 @@ class MongoEventStore implements EventStoreInterface
      */
     public function save(StreamInterface $stream): void
     {
-        $bulkWrite = new BulkWrite();
+        $bulkWrite = $this->getBulkWrite();
 
         foreach ($stream as $message) {
             $bulkWrite->insert(
@@ -97,7 +98,8 @@ class MongoEventStore implements EventStoreInterface
             ->getManager()
             ->executeBulkWrite(
                 $this->getNamespace(),
-                $bulkWrite
+                $bulkWrite,
+                $this->getWriteConcern()
             );
     }
 
@@ -172,6 +174,26 @@ class MongoEventStore implements EventStoreInterface
                 'sequence' => 1,
             ],
         ]);
+    }
+
+    /**
+     * Get Mongo bulk write.
+     *
+     * @return BulkWrite
+     */
+    protected function getBulkWrite(): BulkWrite
+    {
+        return new BulkWrite(['ordered' => true]);
+    }
+
+    /**
+     * Get Mongo write concern.
+     *
+     * @return WriteConcern
+     */
+    protected function getWriteConcern(): WriteConcern
+    {
+        return new WriteConcern(1, 10000, true);
     }
 
     /**

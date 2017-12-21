@@ -69,6 +69,8 @@ class MongoEventStoreTest extends TestCase
      * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getSerializer()
      * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getNamespace()
      * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getQuery()
+     * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getBulkWrite()
+     * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getWriteConcern()
      */
     public function testSaveAndLoad(): void
     {
