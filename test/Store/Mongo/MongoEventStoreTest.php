@@ -61,9 +61,9 @@ class MongoEventStoreTest extends TestCase
      * Test that saved stream will be loaded and the domain event message are in the correct sequence order.
      *
      * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::__construct()
-     * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::save()
+     * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::saveStream()
      * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getMongoDocument()
-     * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::load()
+     * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::loadStream()
      * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getDomainEventMessage()
      * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getManager()
      * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getSerializer()
@@ -150,9 +150,9 @@ class MongoEventStoreTest extends TestCase
          * @var StreamInterface     $stream
          */
         $eventStore = new MongoEventStore($this->manager, $this->namespace, $serializer);
-        $eventStore->save($stream);
+        $eventStore->saveStream($stream);
 
-        $loaded = $eventStore->load($aggregateId);
+        $loaded = $eventStore->loadStream($aggregateId);
         $this->assertCount(5, $loaded);
 
         foreach ($loaded as $index => $domainEventMessage) {

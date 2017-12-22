@@ -101,7 +101,7 @@ class EventStoreRepository implements RepositoryInterface
     {
         return $this
             ->getEventStore()
-            ->load($identifier);
+            ->loadStream($identifier);
     }
 
     /**
@@ -115,7 +115,7 @@ class EventStoreRepository implements RepositoryInterface
     {
         $this
             ->getEventStore()
-            ->save($stream);
+            ->saveStream($stream);
 
         return $this;
     }

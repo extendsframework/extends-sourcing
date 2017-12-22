@@ -14,7 +14,7 @@ interface EventStoreInterface
      * @return StreamInterface
      * @throws EventStoreException
      */
-    public function load(string $identifier): StreamInterface;
+    public function loadStream(string $identifier): StreamInterface;
 
     /**
      * Save stream to event store.
@@ -22,5 +22,5 @@ interface EventStoreInterface
      * @param StreamInterface $stream
      * @throws EventStoreException
      */
-    public function save(StreamInterface $stream): void;
+    public function saveStream(StreamInterface $stream): void;
 }

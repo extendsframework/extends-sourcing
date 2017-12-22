@@ -59,13 +59,13 @@ class MongoEventStore implements EventStoreInterface
     /**
      * @inheritDoc
      */
-    public function load(string $aggregateId): StreamInterface
+    public function loadStream(string $identifier): StreamInterface
     {
         $cursor = $this
             ->getManager()
             ->executeQuery(
                 $this->getNamespace(),
-                $this->getQuery($aggregateId)
+                $this->getQuery($identifier)
             );
         $cursor->setTypeMap([
             'root' => 'array',
@@ -78,13 +78,13 @@ class MongoEventStore implements EventStoreInterface
             $messages[] = $this->getDomainEventMessage($document);
         }
 
-        return new Stream($aggregateId, count($messages), $messages);
+        return new Stream($identifier, count($messages), $messages);
     }
 
     /**
      * @inheritDoc
      */
-    public function save(StreamInterface $stream): void
+    public function saveStream(StreamInterface $stream): void
     {
         $bulkWrite = $this->getBulkWrite();
 

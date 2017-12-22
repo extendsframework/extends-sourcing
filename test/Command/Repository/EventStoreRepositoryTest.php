@@ -20,7 +20,6 @@ class EventStoreRepositoryTest extends TestCase
      * Test that stream will be load for identifier and the aggregate will be constructed.
      *
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::__construct()
-     * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::load()
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::loadStream()
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::getAggregate()
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::getEventStore()
@@ -33,7 +32,7 @@ class EventStoreRepositoryTest extends TestCase
         $eventStore = $this->createMock(EventStoreInterface::class);
         $eventStore
             ->expects($this->once())
-            ->method('load')
+            ->method('loadStream')
             ->with('foo')
             ->willReturn($stream);
 
@@ -55,7 +54,6 @@ class EventStoreRepositoryTest extends TestCase
      * Test that aggregate stream will be saved to event store and published.
      *
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::__construct()
-     * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::save()
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::saveStream()
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::publishStream()
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::getEventStore()
@@ -83,7 +81,7 @@ class EventStoreRepositoryTest extends TestCase
         $eventStore = $this->createMock(EventStoreInterface::class);
         $eventStore
             ->expects($this->once())
-            ->method('save')
+            ->method('saveStream')
             ->with($stream);
 
         $eventPublisher = $this->createMock(EventPublisherInterface::class);
