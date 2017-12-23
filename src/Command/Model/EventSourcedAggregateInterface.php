@@ -16,6 +16,13 @@ interface EventSourcedAggregateInterface extends AggregateInterface
     public function commit(): void;
 
     /**
+     * Load stream into aggregate.
+     *
+     * @param StreamInterface $stream
+     */
+    public function initialize(StreamInterface $stream): void;
+
+    /**
      * Get stream.
      *
      * @return StreamInterface

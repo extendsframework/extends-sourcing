@@ -18,10 +18,13 @@ class EventSourcedAggregateTest extends TestCase
      *
      * Test that aggregate will be constructed and domain event message will be applied.
      *
-     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::__construct()
+     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::initialize()
+     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::isInitialized()
      * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::apply()
+     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::getIdentifier()
+     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::getVersion()
      */
-    public function testConstruct(): void
+    public function testInitialize(): void
     {
         $payload = $this->createMock(PayloadInterface::class);
 
@@ -65,7 +68,8 @@ class EventSourcedAggregateTest extends TestCase
         /**
          * @var StreamInterface $stream
          */
-        $aggregate = new EventSourcedAggregateStub($stream);
+        $aggregate = new EventSourcedAggregateStub();
+        $aggregate->initialize($stream);
 
         $this->assertSame('bar', $aggregate->getIdentifier());
         $this->assertSame(12, $aggregate->getVersion());
@@ -77,7 +81,8 @@ class EventSourcedAggregateTest extends TestCase
      *
      * Test that handled command message will result in a domain event message.
      *
-     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::__construct()
+     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::initialize()
+     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::isInitialized()
      * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::record()
      * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::apply()
      * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::addDomainEventMessage()
@@ -124,7 +129,8 @@ class EventSourcedAggregateTest extends TestCase
          * @var StreamInterface         $stream
          * @var CommandMessageInterface $commandMessage
          */
-        $aggregate = new EventSourcedAggregateStub($stream);
+        $aggregate = new EventSourcedAggregateStub();
+        $aggregate->initialize($stream);
         $aggregate->handle($commandMessage);
 
         $this->assertSame(13, $aggregate->getVersion());
@@ -142,6 +148,35 @@ class EventSourcedAggregateTest extends TestCase
         $aggregate->commit();
 
         $this->assertCount(0, $aggregate->getStream());
+    }
+
+    /**
+     * Aggregate already initialized.
+     *
+     * Test that an exception will be thrown when aggregate is already initialized.
+     *
+     * @covers                   \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::initialize()
+     * @covers                   \ExtendsFramework\Sourcing\Command\Model\Exception\AggregateAlreadyInitialized::__construct()
+     * @expectedException        \ExtendsFramework\Sourcing\Command\Model\Exception\AggregateAlreadyInitialized
+     * @expectedExceptionMessage Can not load stream for id "bar", aggregate already initialized.
+     */
+    public function testAggregateAlreadyInitialized(): void
+    {
+        $stream = $this->createMock(StreamInterface::class);
+        $stream
+            ->method('getAggregateId')
+            ->willReturn('bar');
+
+        $stream
+            ->method('getVersion')
+            ->willReturn(12);
+
+        /**
+         * @var StreamInterface $stream
+         */
+        $aggregate = new EventSourcedAggregateStub();
+        $aggregate->initialize($stream);
+        $aggregate->initialize($stream);
     }
 }
 

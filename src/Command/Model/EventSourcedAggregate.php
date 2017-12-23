@@ -4,37 +4,60 @@ declare(strict_types=1);
 namespace ExtendsFramework\Sourcing\Command\Model;
 
 use DateTime;
-use ExtendsFramework\Command\Model\AbstractAggregate;
+use ExtendsFramework\Command\Handler\AbstractCommandHandler;
 use ExtendsFramework\Message\Payload\Exception\MethodNotFound;
 use ExtendsFramework\Message\Payload\PayloadInterface;
 use ExtendsFramework\Message\Payload\Type\PayloadType;
+use ExtendsFramework\Sourcing\Command\Model\Exception\AggregateAlreadyInitialized;
 use ExtendsFramework\Sourcing\Event\Message\DomainEventMessage;
 use ExtendsFramework\Sourcing\Event\Message\DomainEventMessageInterface;
 use ExtendsFramework\Sourcing\Event\Stream\Stream;
 use ExtendsFramework\Sourcing\Event\Stream\StreamInterface;
 
-abstract class EventSourcedAggregate extends AbstractAggregate implements EventSourcedAggregateInterface
+abstract class EventSourcedAggregate extends AbstractCommandHandler implements EventSourcedAggregateInterface
 {
     /**
-     * Recorded events.
+     * Aggregate id.
+     *
+     * @var string
+     */
+    protected $identifier;
+
+    /**
+     * Aggregate version.
+     *
+     * @var int
+     */
+    protected $version;
+
+    /**
+     * If aggregate is already initialized with event stream.
+     *
+     * @var bool
+     */
+    protected $initialized = false;
+
+    /**
+     * Recorded domain event messages.
      *
      * @var DomainEventMessageInterface[]
      */
     protected $domainEventMessages = [];
 
     /**
-     * EventSourcedAggregate constructor.
-     *
-     * @param StreamInterface $stream
-     * @throws MethodNotFound
+     * @inheritDoc
      */
-    public function __construct(StreamInterface $stream)
+    public function getIdentifier(): string
     {
-        parent::__construct($stream->getAggregateId(), $stream->getVersion());
+        return $this->identifier;
+    }
 
-        foreach ($stream as $domainEventMessage) {
-            $this->apply($domainEventMessage);
-        }
+    /**
+     * @inheritDoc
+     */
+    public function getVersion(): int
+    {
+        return $this->version;
     }
 
     /**
@@ -43,6 +66,25 @@ abstract class EventSourcedAggregate extends AbstractAggregate implements EventS
     public function commit(): void
     {
         $this->domainEventMessages = [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function initialize(StreamInterface $stream): void
+    {
+        if ($this->isInitialized() === true) {
+            throw new AggregateAlreadyInitialized($stream);
+        }
+
+        $this->identifier = $stream->getAggregateId();
+        $this->version = $stream->getVersion();
+
+        foreach ($stream as $domainEventMessage) {
+            $this->apply($domainEventMessage);
+        }
+
+        $this->initialized = true;
     }
 
     /**
@@ -133,5 +175,15 @@ abstract class EventSourcedAggregate extends AbstractAggregate implements EventS
     protected function getNextVersion(): int
     {
         return ++$this->version;
+    }
+
+    /**
+     * If aggregate is already initialized.
+     *
+     * @return bool
+     */
+    protected function isInitialized(): bool
+    {
+        return $this->initialized;
     }
 }
