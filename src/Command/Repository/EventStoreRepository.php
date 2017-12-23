@@ -11,7 +11,6 @@ use ExtendsFramework\Sourcing\Command\Repository\Exception\AggregateNotEventSour
 use ExtendsFramework\Sourcing\Event\Stream\StreamInterface;
 use ExtendsFramework\Sourcing\Store\EventStoreException;
 use ExtendsFramework\Sourcing\Store\EventStoreInterface;
-use ReflectionClass;
 
 class EventStoreRepository implements RepositoryInterface
 {
@@ -30,24 +29,24 @@ class EventStoreRepository implements RepositoryInterface
     protected $eventPublisher;
 
     /**
-     * Aggregate class to instantiate.
+     * Aggregate to initialize.
      *
-     * @var string
+     * @var EventSourcedAggregateInterface
      */
-    protected $aggregateClass;
+    protected $aggregate;
 
     /**
      * EventSourcedRepository constructor.
      *
-     * @param EventStoreInterface     $eventStore
-     * @param EventPublisherInterface $eventPublisher
-     * @param string                  $aggregateClass
+     * @param EventStoreInterface            $eventStore
+     * @param EventPublisherInterface        $eventPublisher
+     * @param EventSourcedAggregateInterface $aggregate
      */
-    public function __construct(EventStoreInterface $eventStore, EventPublisherInterface $eventPublisher, string $aggregateClass)
+    public function __construct(EventStoreInterface $eventStore, EventPublisherInterface $eventPublisher, EventSourcedAggregateInterface $aggregate)
     {
         $this->eventStore = $eventStore;
         $this->eventPublisher = $eventPublisher;
-        $this->aggregateClass = $aggregateClass;
+        $this->aggregate = $aggregate;
     }
 
     /**
@@ -55,9 +54,12 @@ class EventStoreRepository implements RepositoryInterface
      */
     public function load(string $identifier): AggregateInterface
     {
-        return $this->getAggregate(
+        $aggregate = $this->getAggregate();
+        $aggregate->initialize(
             $this->loadStream($identifier)
         );
+
+        return $aggregate;
     }
 
     /**
@@ -78,16 +80,16 @@ class EventStoreRepository implements RepositoryInterface
     }
 
     /**
-     * Get aggregate with stream.
+     * Get aggregate to initialize.
      *
-     * @param StreamInterface $stream
-     * @return EventSourcedAggregateInterface|object
+     * Aggregate must be cloned because every aggregate will have its own state after initialization and therefor can
+     * not be reused.
+     *
+     * @return EventSourcedAggregateInterface
      */
-    protected function getAggregate(StreamInterface $stream): EventSourcedAggregateInterface
+    protected function getAggregate(): EventSourcedAggregateInterface
     {
-        $class = new ReflectionClass($this->aggregateClass);
-
-        return $class->newInstance($stream);
+        return clone $this->aggregate;
     }
 
     /**

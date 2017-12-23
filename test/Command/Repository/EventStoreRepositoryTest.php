@@ -5,7 +5,6 @@ namespace ExtendsFramework\Sourcing\Command\Repository;
 
 use ExtendsFramework\Command\Model\AggregateInterface;
 use ExtendsFramework\Event\Publisher\EventPublisherInterface;
-use ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate;
 use ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregateInterface;
 use ExtendsFramework\Sourcing\Event\Message\DomainEventMessageInterface;
 use ExtendsFramework\Sourcing\Event\Stream\StreamInterface;
@@ -20,6 +19,7 @@ class EventStoreRepositoryTest extends TestCase
      * Test that stream will be load for identifier and the aggregate will be constructed.
      *
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::__construct()
+     * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::load()
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::loadStream()
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::getAggregate()
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::getEventStore()
@@ -38,14 +38,20 @@ class EventStoreRepositoryTest extends TestCase
 
         $eventPublisher = $this->createMock(EventPublisherInterface::class);
 
-        /**
-         * @var EventStoreInterface     $eventStore
-         * @var EventPublisherInterface $eventPublisher
-         */
-        $repository = new EventStoreRepository($eventStore, $eventPublisher, EventSourcedAggregateStub::class);
-        $aggregate = $repository->load('foo');
+        $aggregate = $this->createMock(EventSourcedAggregateInterface::class);
+        $aggregate
+            ->expects($this->once())
+            ->method('initialize')
+            ->with($stream);
 
-        $this->assertInstanceOf(EventSourcedAggregateStub::class, $aggregate);
+        /**
+         * @var EventStoreInterface            $eventStore
+         * @var EventPublisherInterface        $eventPublisher
+         * @var EventSourcedAggregateInterface $aggregate
+         */
+        $repository = new EventStoreRepository($eventStore, $eventPublisher, $aggregate);
+
+        $this->assertInstanceOf(EventSourcedAggregateInterface::class, $repository->load('foo'));
     }
 
     /**
@@ -54,6 +60,7 @@ class EventStoreRepositoryTest extends TestCase
      * Test that aggregate stream will be saved to event store and published.
      *
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::__construct()
+     * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::save()
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::saveStream()
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::publishStream()
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::getEventStore()
@@ -104,7 +111,7 @@ class EventStoreRepositoryTest extends TestCase
          * @var EventPublisherInterface        $eventPublisher
          * @var EventSourcedAggregateInterface $aggregate
          */
-        $repository = new EventStoreRepository($eventStore, $eventPublisher, EventSourcedAggregateStub::class);
+        $repository = new EventStoreRepository($eventStore, $eventPublisher, $aggregate);
         $repository->save($aggregate);
     }
 
@@ -124,18 +131,17 @@ class EventStoreRepositoryTest extends TestCase
 
         $eventPublisher = $this->createMock(EventPublisherInterface::class);
 
-        $aggregate = $this->createMock(AggregateInterface::class);
+        $aggregate = $this->createMock(EventSourcedAggregateInterface::class);
+
+        $notEventSourced = $this->createMock(AggregateInterface::class);
 
         /**
-         * @var EventStoreInterface     $eventStore
-         * @var EventPublisherInterface $eventPublisher
-         * @var AggregateInterface      $aggregate
+         * @var EventStoreInterface            $eventStore
+         * @var EventPublisherInterface        $eventPublisher
+         * @var EventSourcedAggregateInterface $aggregate
+         * @var AggregateInterface             $notEventSourced
          */
-        $repository = new EventStoreRepository($eventStore, $eventPublisher, EventSourcedAggregateStub::class);
-        $repository->save($aggregate);
+        $repository = new EventStoreRepository($eventStore, $eventPublisher, $aggregate);
+        $repository->save($notEventSourced);
     }
-}
-
-class EventSourcedAggregateStub extends EventSourcedAggregate
-{
 }
