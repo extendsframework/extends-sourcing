@@ -207,7 +207,7 @@ class EventSourcedAggregateStub extends EventSourcedAggregate
     /**
      * @param PayloadInterface $payload
      */
-    protected function applyFooBar(PayloadInterface $payload): void
+    protected function onFooBar(PayloadInterface $payload): void
     {
         $this->payload = $payload;
     }

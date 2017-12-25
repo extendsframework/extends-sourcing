@@ -108,7 +108,7 @@ abstract class EventSourcedAggregate extends AbstractCommandHandler implements E
      */
     protected function apply(DomainEventMessageInterface $domainEventMessage): EventSourcedAggregate
     {
-        $this->getMethod($domainEventMessage, 'apply')($domainEventMessage->getPayload());
+        $this->getMethod($domainEventMessage, 'on')($domainEventMessage->getPayload());
 
         return $this;
     }
