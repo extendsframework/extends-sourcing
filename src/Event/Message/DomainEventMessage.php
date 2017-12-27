@@ -27,8 +27,14 @@ class DomainEventMessage extends EventMessage implements DomainEventMessageInter
     /**
      * @inheritDoc
      */
-    public function __construct(PayloadInterface $payload, PayloadTypeInterface $payloadType, DateTime $occurredOn, string $aggregateId, int $sequence, array $metaData)
-    {
+    public function __construct(
+        PayloadInterface $payload,
+        PayloadTypeInterface $payloadType,
+        DateTime $occurredOn,
+        string $aggregateId,
+        int $sequence,
+        array $metaData
+    ) {
         parent::__construct($payload, $payloadType, $occurredOn, $metaData);
 
         $this->aggregateId = $aggregateId;

@@ -7,7 +7,6 @@ use ExtendsFramework\Serializer\SerializerInterface;
 use ExtendsFramework\ServiceLocator\Resolver\Factory\ServiceFactoryInterface;
 use ExtendsFramework\ServiceLocator\ServiceLocatorException;
 use ExtendsFramework\ServiceLocator\ServiceLocatorInterface;
-use ExtendsFramework\Sourcing\Store\EventStoreInterface;
 use ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore;
 use MongoDB\Driver\Manager;
 
@@ -16,7 +15,7 @@ class MongoEventStoreFactory implements ServiceFactoryInterface
     /**
      * @inheritDoc
      */
-    public function createService(string $key, ServiceLocatorInterface $serviceLocator, array $extra = null): EventStoreInterface
+    public function createService(string $key, ServiceLocatorInterface $serviceLocator, array $extra = null): object
     {
         $config = $serviceLocator->getConfig();
         $config = $config[MongoEventStore::class] ?? [];
@@ -35,7 +34,7 @@ class MongoEventStoreFactory implements ServiceFactoryInterface
      * @return Manager
      * @throws ServiceLocatorException
      */
-    protected function getManager(ServiceLocatorInterface $serviceLocator): Manager
+    protected function getManager(ServiceLocatorInterface $serviceLocator): object
     {
         return $serviceLocator->getService(Manager::class);
     }
@@ -47,7 +46,7 @@ class MongoEventStoreFactory implements ServiceFactoryInterface
      * @return SerializerInterface
      * @throws ServiceLocatorException
      */
-    protected function getSerializer(ServiceLocatorInterface $serviceLocator): SerializerInterface
+    protected function getSerializer(ServiceLocatorInterface $serviceLocator): object
     {
         return $serviceLocator->getService(SerializerInterface::class);
     }

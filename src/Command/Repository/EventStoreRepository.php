@@ -42,8 +42,11 @@ class EventStoreRepository implements RepositoryInterface
      * @param EventPublisherInterface        $eventPublisher
      * @param EventSourcedAggregateInterface $aggregate
      */
-    public function __construct(EventStoreInterface $eventStore, EventPublisherInterface $eventPublisher, EventSourcedAggregateInterface $aggregate)
-    {
+    public function __construct(
+        EventStoreInterface $eventStore,
+        EventPublisherInterface $eventPublisher,
+        EventSourcedAggregateInterface $aggregate
+    ) {
         $this->eventStore = $eventStore;
         $this->eventPublisher = $eventPublisher;
         $this->aggregate = $aggregate;
@@ -67,7 +70,7 @@ class EventStoreRepository implements RepositoryInterface
      */
     public function save(AggregateInterface $aggregate): void
     {
-        if (!$aggregate instanceof EventSourcedAggregateInterface) {
+        if (! $aggregate instanceof EventSourcedAggregateInterface) {
             throw new AggregateNotEventSourced();
         }
 
