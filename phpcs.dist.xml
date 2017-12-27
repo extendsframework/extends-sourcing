@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<ruleset name="Extends Framework Coding Standard">
+    <rule ref="./vendor/extendsframework/extends-coding-standard/ruleset.xml"/>
+
+    <file>src</file>
+</ruleset>
