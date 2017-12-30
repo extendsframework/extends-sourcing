@@ -6,6 +6,9 @@ cache:
   directories:
     - $HOME/.composer/cache
 
+services:
+  - mongodb
+
 php:
   - 7.2
 
