@@ -21,5 +21,8 @@ before_script:
   - cp phpcs.dist.xml phpcs.xml
 
 script:
-  - vendor/bin/phpunit
+  - vendor/bin/phpunit --verbose --colors=always --coverage-clover clover.xml
   - vendor/bin/phpcs
+
+after_success:
+  - vendor/bin/php-coveralls -v
