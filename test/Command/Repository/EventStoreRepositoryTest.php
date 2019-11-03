@@ -113,13 +113,14 @@ class EventStoreRepositoryTest extends TestCase
      *
      * Test that an exception will be thrown when aggregate is not event sourced.
      *
-     * @covers                   \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::save()
-     * @covers                   \ExtendsFramework\Sourcing\Command\Repository\Exception\AggregateNotEventSourced::__construct()
-     * @expectedException        AggregateNotEventSourced
-     * @expectedExceptionMessage Can not save stream to event store because aggregate is not event sourced.
+     * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::save()
+     * @covers \ExtendsFramework\Sourcing\Command\Repository\Exception\AggregateNotEventSourced::__construct()
      */
     public function testAggregateNotEventSourced(): void
     {
+        $this->expectException(AggregateNotEventSourced::class);
+        $this->expectExceptionMessage('Can not save stream to event store because aggregate is not event sourced.');
+
         $eventStore = $this->createMock(EventStoreInterface::class);
 
         $eventPublisher = $this->createMock(EventPublisherInterface::class);

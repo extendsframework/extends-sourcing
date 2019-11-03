@@ -150,13 +150,14 @@ class EventSourcedAggregateTest extends TestCase
      *
      * Test that an exception will be thrown when aggregate is already initialized.
      *
-     * @covers                   \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::initialize()
-     * @covers                   \ExtendsFramework\Sourcing\Command\Model\Exception\AggregateAlreadyInitialized::__construct()
-     * @expectedException        AggregateAlreadyInitialized
-     * @expectedExceptionMessage Can not load stream for id "bar", aggregate already initialized.
+     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::initialize()
+     * @covers \ExtendsFramework\Sourcing\Command\Model\Exception\AggregateAlreadyInitialized::__construct()
      */
     public function testAggregateAlreadyInitialized(): void
     {
+        $this->expectException(AggregateAlreadyInitialized::class);
+        $this->expectExceptionMessage('Can not load stream for id "bar", aggregate already initialized.');
+
         $stream = $this->createMock(StreamInterface::class);
         $stream
             ->method('getAggregateId')
