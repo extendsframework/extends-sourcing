@@ -4,10 +4,8 @@ declare(strict_types=1);
 namespace ExtendsFramework\Sourcing\Framework\ServiceLocator\Factory;
 
 use ExtendsFramework\Command\Dispatcher\CommandDispatcherInterface;
-use ExtendsFramework\Command\Handler\AbstractCommandHandler;
 use ExtendsFramework\Event\Publisher\EventPublisherInterface;
 use ExtendsFramework\ServiceLocator\ServiceLocatorInterface;
-use ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate;
 use ExtendsFramework\Sourcing\Store\EventStoreInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -60,12 +58,4 @@ class CommandDispatcherFactoryTest extends TestCase
 
         $this->assertInstanceOf(CommandDispatcherInterface::class, $dispatcher);
     }
-}
-
-class EventSourcedAggregateStub extends EventSourcedAggregate
-{
-}
-
-class CommandHandlerStub extends AbstractCommandHandler
-{
 }

@@ -62,15 +62,7 @@ class MongoEventStoreTest extends TestCase
      *
      * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::__construct()
      * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::saveStream()
-     * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getMongoDocument()
      * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::loadStream()
-     * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getDomainEventMessage()
-     * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getManager()
-     * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getSerializer()
-     * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getNamespace()
-     * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getQuery()
-     * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getBulkWrite()
-     * @covers \ExtendsFramework\Sourcing\Store\Mongo\MongoEventStore::getWriteConcern()
      */
     public function testSaveAndLoad(): void
     {

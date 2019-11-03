@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace ExtendsFramework\Sourcing\Command\Model;
 
 use ExtendsFramework\Command\CommandMessageInterface;
-use ExtendsFramework\Message\Payload\Exception\MethodNotFound;
 use ExtendsFramework\Message\Payload\PayloadInterface;
 use ExtendsFramework\Message\Payload\Type\PayloadTypeInterface;
+use ExtendsFramework\Sourcing\Command\Model\Exception\AggregateAlreadyInitialized;
 use ExtendsFramework\Sourcing\Event\Message\DomainEventMessageInterface;
 use ExtendsFramework\Sourcing\Event\Stream\StreamInterface;
 use PHPUnit\Framework\TestCase;
@@ -19,10 +19,9 @@ class EventSourcedAggregateTest extends TestCase
      * Test that aggregate will be constructed and domain event message will be applied.
      *
      * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::initialize()
-     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::isInitialized()
-     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::apply()
      * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::getIdentifier()
      * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::getVersion()
+     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::apply()
      */
     public function testInitialize(): void
     {
@@ -82,14 +81,10 @@ class EventSourcedAggregateTest extends TestCase
      * Test that handled command message will result in a domain event message.
      *
      * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::initialize()
-     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::isInitialized()
      * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::record()
-     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::apply()
-     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::addDomainEventMessage()
      * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::getStream()
+     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::apply()
      * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::commit()
-     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::getRecordedEvents()
-     * @covers \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::getNextVersion()
      */
     public function testRecord(): void
     {
@@ -157,7 +152,7 @@ class EventSourcedAggregateTest extends TestCase
      *
      * @covers                   \ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregate::initialize()
      * @covers                   \ExtendsFramework\Sourcing\Command\Model\Exception\AggregateAlreadyInitialized::__construct()
-     * @expectedException        \ExtendsFramework\Sourcing\Command\Model\Exception\AggregateAlreadyInitialized
+     * @expectedException        AggregateAlreadyInitialized
      * @expectedExceptionMessage Can not load stream for id "bar", aggregate already initialized.
      */
     public function testAggregateAlreadyInitialized(): void
@@ -177,38 +172,5 @@ class EventSourcedAggregateTest extends TestCase
         $aggregate = new EventSourcedAggregateStub();
         $aggregate->initialize($stream);
         $aggregate->initialize($stream);
-    }
-}
-
-class EventSourcedAggregateStub extends EventSourcedAggregate
-{
-    /**
-     * @var PayloadInterface
-     */
-    protected $payload;
-
-    /**
-     * @return PayloadInterface
-     */
-    public function getPayload(): PayloadInterface
-    {
-        return $this->payload;
-    }
-
-    /**
-     * @param PayloadInterface $payload
-     * @throws MethodNotFound
-     */
-    protected function handleFooBar(PayloadInterface $payload): void
-    {
-        $this->record($payload, ['bar' => 'baz']);
-    }
-
-    /**
-     * @param PayloadInterface $payload
-     */
-    protected function onFooBar(PayloadInterface $payload): void
-    {
-        $this->payload = $payload;
     }
 }

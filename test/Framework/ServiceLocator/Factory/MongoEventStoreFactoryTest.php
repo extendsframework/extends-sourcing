@@ -17,8 +17,6 @@ class MongoEventStoreFactoryTest extends TestCase
      * Test that correct service will be created.
      *
      * @covers \ExtendsFramework\Sourcing\Framework\ServiceLocator\Factory\MongoEventStoreFactory::createService()
-     * @covers \ExtendsFramework\Sourcing\Framework\ServiceLocator\Factory\MongoEventStoreFactory::getManager()
-     * @covers \ExtendsFramework\Sourcing\Framework\ServiceLocator\Factory\MongoEventStoreFactory::getSerializer()
      */
     public function testCreateService(): void
     {

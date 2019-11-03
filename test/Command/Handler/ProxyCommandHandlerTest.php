@@ -19,9 +19,6 @@ class ProxyCommandHandlerTest extends TestCase
      *
      * @covers \ExtendsFramework\Sourcing\Command\Handler\ProxyCommandHandler::__construct()
      * @covers \ExtendsFramework\Sourcing\Command\Handler\ProxyCommandHandler::handle()
-     * @covers \ExtendsFramework\Sourcing\Command\Handler\ProxyCommandHandler::getRepository()
-     * @covers \ExtendsFramework\Sourcing\Command\Handler\ProxyCommandHandler::loadAggregate()
-     * @covers \ExtendsFramework\Sourcing\Command\Handler\ProxyCommandHandler::saveAggregate()
      */
     public function testHandle(): void
     {

@@ -3,18 +3,17 @@ declare(strict_types=1);
 
 namespace ExtendsFramework\Sourcing\Store\Mongo;
 
-use ExtendsFramework\Message\Payload\PayloadInterface;
 use ExtendsFramework\Message\Payload\Type\PayloadType;
 use ExtendsFramework\Serializer\SerializedObject;
 use ExtendsFramework\Serializer\SerializerException;
 use ExtendsFramework\Serializer\SerializerInterface;
 use ExtendsFramework\Sourcing\Event\Message\DomainEventMessage;
-use ExtendsFramework\Sourcing\Event\Message\DomainEventMessageInterface;
 use ExtendsFramework\Sourcing\Event\Stream\Stream;
 use ExtendsFramework\Sourcing\Event\Stream\StreamInterface;
 use ExtendsFramework\Sourcing\Store\EventStoreInterface;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Driver\BulkWrite;
+use MongoDB\Driver\Exception\Exception;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\Query;
 use MongoDB\Driver\WriteConcern;
@@ -26,21 +25,21 @@ class MongoEventStore implements EventStoreInterface
      *
      * @var Manager
      */
-    protected $manager;
+    private $manager;
 
     /**
      * Namespace.
      *
      * @var string
      */
-    protected $namespace;
+    private $namespace;
 
     /**
      * Object serializer.
      *
      * @var SerializerInterface
      */
-    protected $serializer;
+    private $serializer;
 
     /**
      * MongoEventStore constructor.
@@ -58,15 +57,22 @@ class MongoEventStore implements EventStoreInterface
 
     /**
      * @inheritDoc
+     * @throws Exception
+     * @throws SerializerException
      */
     public function loadStream(string $identifier): StreamInterface
     {
-        $cursor = $this
-            ->getManager()
-            ->executeQuery(
-                $this->getNamespace(),
-                $this->getQuery($identifier)
-            );
+        $cursor = $this->manager->executeQuery(
+            $this->namespace,
+            new Query([
+                'aggregate_id' => $identifier,
+            ], [
+                'sort' => [
+                    'sequence' => 1,
+                ],
+            ])
+        );
+
         $cursor->setTypeMap([
             'root' => 'array',
             'document' => 'array',
@@ -75,7 +81,21 @@ class MongoEventStore implements EventStoreInterface
 
         $messages = [];
         foreach ($cursor as $document) {
-            $messages[] = $this->getDomainEventMessage($document);
+            $payload = $this->serializer->unserialize(new SerializedObject(
+                $document['payload']['name'],
+                $document['payload']['data']
+            ));
+
+            /** @noinspection PhpParamsInspection */
+            /** @noinspection PhpUndefinedMethodInspection */
+            $messages[] = new DomainEventMessage(
+                $payload,
+                new PayloadType($payload),
+                $document['occurred_on']->toDateTime(),
+                $document['aggregate_id'],
+                $document['sequence'],
+                $document['meta_data']
+            );
         }
 
         return new Stream($identifier, count($messages), $messages);
@@ -83,146 +103,34 @@ class MongoEventStore implements EventStoreInterface
 
     /**
      * @inheritDoc
+     * @throws SerializerException
      */
     public function saveStream(StreamInterface $stream): void
     {
-        $bulkWrite = $this->getBulkWrite();
+        $bulkWrite = new BulkWrite(['ordered' => true]);
 
-        foreach ($stream as $message) {
-            $bulkWrite->insert(
-                $this->getMongoDocument($message)
-            );
+        foreach ($stream as $domainEventMessage) {
+            $payload = $this->serializer->serialize($domainEventMessage->getPayload());
+            $bulkWrite->insert([
+                'aggregate_id' => $domainEventMessage->getAggregateId(),
+                'sequence' => $domainEventMessage->getSequence(),
+                'occurred_on' => new UTCDateTime(
+                    $domainEventMessage
+                        ->getOccurredOn()
+                        ->format('Uv')
+                ),
+                'payload' => [
+                    'name' => $payload->getClassName(),
+                    'data' => (object)$payload->getData(),
+                ],
+                'meta_data' => (object)$domainEventMessage->getMetaData(),
+            ]);
         }
 
-        $this
-            ->getManager()
-            ->executeBulkWrite(
-                $this->getNamespace(),
-                $bulkWrite,
-                $this->getWriteConcern()
-            );
-    }
-
-    /**
-     * Get Mongo document from domain event message.
-     *
-     * @param DomainEventMessageInterface $domainEventMessage
-     * @return array
-     * @throws SerializerException
-     */
-    protected function getMongoDocument(DomainEventMessageInterface $domainEventMessage): array
-    {
-        $payload = $this
-            ->getSerializer()
-            ->serialize($domainEventMessage->getPayload());
-
-        return [
-            'aggregate_id' => $domainEventMessage->getAggregateId(),
-            'sequence' => $domainEventMessage->getSequence(),
-            'occurred_on' => new UTCDateTime(
-                $domainEventMessage
-                    ->getOccurredOn()
-                    ->format('Uv')
-            ),
-            'payload' => [
-                'name' => $payload->getClassName(),
-                'data' => (object)$payload->getData(),
-            ],
-            'meta_data' => (object)$domainEventMessage->getMetaData(),
-        ];
-    }
-
-    /**
-     * Get domain event message from Mongo document.
-     *
-     * @param array $document
-     * @return DomainEventMessageInterface
-     * @throws SerializerException
-     */
-    protected function getDomainEventMessage(array $document): DomainEventMessageInterface
-    {
-        $payload = $this
-            ->getSerializer()
-            ->unserialize(new SerializedObject(
-                $document['payload']['name'],
-                $document['payload']['data']
-            ));
-
-        /** @var PayloadInterface $payload */
-        return new DomainEventMessage(
-            $payload,
-            new PayloadType($payload),
-            $document['occurred_on']->toDateTime(),
-            $document['aggregate_id'],
-            $document['sequence'],
-            $document['meta_data']
+        $this->manager->executeBulkWrite(
+            $this->namespace,
+            $bulkWrite,
+            new WriteConcern(1, 10000, true)
         );
-    }
-
-    /**
-     * Get Mongo cursor for aggregate id.
-     *
-     * @param string $aggregateId
-     * @return Query
-     */
-    protected function getQuery(string $aggregateId): Query
-    {
-        return new Query([
-            'aggregate_id' => $aggregateId,
-        ], [
-            'sort' => [
-                'sequence' => 1,
-            ],
-        ]);
-    }
-
-    /**
-     * Get Mongo bulk write.
-     *
-     * @return BulkWrite
-     */
-    protected function getBulkWrite(): BulkWrite
-    {
-        return new BulkWrite(['ordered' => true]);
-    }
-
-    /**
-     * Get Mongo write concern.
-     *
-     * @return WriteConcern
-     */
-    protected function getWriteConcern(): WriteConcern
-    {
-        return new WriteConcern(1, 10000, true);
-    }
-
-    /**
-     * Get mongo manager.
-     *
-     * @return Manager
-     */
-    protected function getManager(): Manager
-    {
-        return $this->manager;
-    }
-
-    /**
-     * Get object serializer.
-     *
-     * @return SerializerInterface
-     */
-    protected function getSerializer(): SerializerInterface
-    {
-        return $this->serializer;
-    }
-
-    /**
-     * Get namespace.
-     *
-     * @return string
-     */
-    protected function getNamespace(): string
-    {
-        return $this->namespace;
     }
 }

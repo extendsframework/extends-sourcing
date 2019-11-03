@@ -12,21 +12,21 @@ class Stream implements StreamInterface
      *
      * @var string
      */
-    protected $aggregateId;
+    private $aggregateId;
 
     /**
      * Aggregate version.
      *
      * @var int
      */
-    protected $version;
+    private $version;
 
     /**
      * Domain event messages.
      *
      * @var DomainEventMessageInterface[]
      */
-    protected $messages = [];
+    private $messages;
 
     /**
      * Stream constructor.

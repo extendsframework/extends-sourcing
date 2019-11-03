@@ -14,40 +14,18 @@ class MongoEventStoreFactory implements ServiceFactoryInterface
 {
     /**
      * @inheritDoc
+     * @throws ServiceLocatorException
      */
     public function createService(string $key, ServiceLocatorInterface $serviceLocator, array $extra = null): object
     {
         $config = $serviceLocator->getConfig();
         $config = $config[MongoEventStore::class] ?? [];
 
+        /** @noinspection PhpParamsInspection */
         return new MongoEventStore(
-            $this->getManager($serviceLocator),
+            $serviceLocator->getService(Manager::class),
             $config['namespace'],
-            $this->getSerializer($serviceLocator)
+            $serviceLocator->getService(SerializerInterface::class)
         );
-    }
-
-    /**
-     * Get MongoDB manager.
-     *
-     * @param ServiceLocatorInterface $serviceLocator
-     * @return Manager
-     * @throws ServiceLocatorException
-     */
-    protected function getManager(ServiceLocatorInterface $serviceLocator): object
-    {
-        return $serviceLocator->getService(Manager::class);
-    }
-
-    /**
-     * Get object serializer for payload.
-     *
-     * @param ServiceLocatorInterface $serviceLocator
-     * @return SerializerInterface
-     * @throws ServiceLocatorException
-     */
-    protected function getSerializer(ServiceLocatorInterface $serviceLocator): object
-    {
-        return $serviceLocator->getService(SerializerInterface::class);
     }
 }

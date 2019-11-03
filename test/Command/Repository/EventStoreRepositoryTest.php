@@ -6,6 +6,7 @@ namespace ExtendsFramework\Sourcing\Command\Repository;
 use ExtendsFramework\Command\Model\AggregateInterface;
 use ExtendsFramework\Event\Publisher\EventPublisherInterface;
 use ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregateInterface;
+use ExtendsFramework\Sourcing\Command\Repository\Exception\AggregateNotEventSourced;
 use ExtendsFramework\Sourcing\Event\Message\DomainEventMessageInterface;
 use ExtendsFramework\Sourcing\Event\Stream\StreamInterface;
 use ExtendsFramework\Sourcing\Store\EventStoreInterface;
@@ -20,10 +21,6 @@ class EventStoreRepositoryTest extends TestCase
      *
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::__construct()
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::load()
-     * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::loadStream()
-     * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::getAggregate()
-     * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::getEventStore()
-     * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::getEventPublisher()
      */
     public function testLoad(): void
     {
@@ -61,10 +58,6 @@ class EventStoreRepositoryTest extends TestCase
      *
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::__construct()
      * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::save()
-     * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::saveStream()
-     * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::publishStream()
-     * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::getEventStore()
-     * @covers \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::getEventPublisher()
      */
     public function testSave(): void
     {
@@ -122,7 +115,7 @@ class EventStoreRepositoryTest extends TestCase
      *
      * @covers                   \ExtendsFramework\Sourcing\Command\Repository\EventStoreRepository::save()
      * @covers                   \ExtendsFramework\Sourcing\Command\Repository\Exception\AggregateNotEventSourced::__construct()
-     * @expectedException        \ExtendsFramework\Sourcing\Command\Repository\Exception\AggregateNotEventSourced
+     * @expectedException        AggregateNotEventSourced
      * @expectedExceptionMessage Can not save stream to event store because aggregate is not event sourced.
      */
     public function testAggregateNotEventSourced(): void

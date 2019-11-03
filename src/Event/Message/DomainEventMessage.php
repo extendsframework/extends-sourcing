@@ -15,14 +15,14 @@ class DomainEventMessage extends EventMessage implements DomainEventMessageInter
      *
      * @var string
      */
-    protected $aggregateId;
+    private $aggregateId;
 
     /**
      * Sequence number.
      *
      * @var int
      */
-    protected $sequence;
+    private $sequence;
 
     /**
      * @inheritDoc

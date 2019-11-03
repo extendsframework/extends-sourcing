@@ -6,6 +6,7 @@ namespace ExtendsFramework\Sourcing\Framework\ServiceLocator\Factory;
 use ExtendsFramework\Command\Framework\ServiceLocator\Factory;
 use ExtendsFramework\Command\Handler\CommandHandlerInterface;
 use ExtendsFramework\Event\Publisher\EventPublisherInterface;
+use ExtendsFramework\ServiceLocator\ServiceLocatorException;
 use ExtendsFramework\ServiceLocator\ServiceLocatorInterface;
 use ExtendsFramework\Sourcing\Command\Handler\ProxyCommandHandler;
 use ExtendsFramework\Sourcing\Command\Model\EventSourcedAggregateInterface;
@@ -19,7 +20,7 @@ class CommandDispatcherFactory extends Factory\CommandDispatcherFactory
      */
     protected function getCommandHandler(ServiceLocatorInterface $serviceLocator, string $key): object
     {
-        if (is_subclass_of($key, EventSourcedAggregateInterface::class, true) === true) {
+        if (is_subclass_of($key, EventSourcedAggregateInterface::class, true)) {
             return $this->getProxyCommandHandler($serviceLocator, $key);
         }
 
@@ -32,21 +33,17 @@ class CommandDispatcherFactory extends Factory\CommandDispatcherFactory
      * @param ServiceLocatorInterface $serviceLocator
      * @param string                  $key
      * @return CommandHandlerInterface
-     * @throws \ExtendsFramework\ServiceLocator\ServiceLocatorException
+     * @throws ServiceLocatorException
      */
-    protected function getProxyCommandHandler(ServiceLocatorInterface $serviceLocator, string $key): object
+    private function getProxyCommandHandler(ServiceLocatorInterface $serviceLocator, string $key): object
     {
-        $eventStore = $serviceLocator->getService(EventStoreInterface::class);
-        $eventPublisher = $serviceLocator->getService(EventPublisherInterface::class);
-        $aggregate = $serviceLocator->getService($key);
-
-        /**
-         * @var EventStoreInterface            $eventStore
-         * @var EventPublisherInterface        $eventPublisher
-         * @var EventSourcedAggregateInterface $aggregate
-         */
+        /** @noinspection PhpParamsInspection */
         return new ProxyCommandHandler(
-            new EventStoreRepository($eventStore, $eventPublisher, $aggregate)
+            new EventStoreRepository(
+                $serviceLocator->getService(EventStoreInterface::class),
+                $serviceLocator->getService(EventPublisherInterface::class),
+                $serviceLocator->getService($key)
+            )
         );
     }
 }

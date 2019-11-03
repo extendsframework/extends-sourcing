@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ExtendsFramework\Sourcing\Command\Model;
 
 use DateTime;
+use Exception;
 use ExtendsFramework\Command\Handler\AbstractCommandHandler;
 use ExtendsFramework\Message\Payload\Exception\MethodNotFound;
 use ExtendsFramework\Message\Payload\PayloadInterface;
@@ -21,28 +22,28 @@ abstract class EventSourcedAggregate extends AbstractCommandHandler implements E
      *
      * @var string
      */
-    protected $identifier;
+    private $identifier;
 
     /**
      * Aggregate version.
      *
      * @var int
      */
-    protected $version;
+    private $version;
 
     /**
      * If aggregate is already initialized with event stream.
      *
      * @var bool
      */
-    protected $initialized = false;
+    private $initialized = false;
 
     /**
      * Recorded domain event messages.
      *
      * @var DomainEventMessageInterface[]
      */
-    protected $domainEventMessages = [];
+    private $domainEventMessages = [];
 
     /**
      * @inheritDoc
@@ -73,7 +74,7 @@ abstract class EventSourcedAggregate extends AbstractCommandHandler implements E
      */
     public function initialize(StreamInterface $stream): void
     {
-        if ($this->isInitialized() === true) {
+        if ($this->initialized) {
             throw new AggregateAlreadyInitialized($stream);
         }
 
@@ -92,25 +93,7 @@ abstract class EventSourcedAggregate extends AbstractCommandHandler implements E
      */
     public function getStream(): StreamInterface
     {
-        return new Stream(
-            $this->getIdentifier(),
-            $this->getVersion(),
-            $this->getRecordedEvents()
-        );
-    }
-
-    /**
-     * Apply domain event message to aggregate.
-     *
-     * @param DomainEventMessageInterface $domainEventMessage
-     * @return EventSourcedAggregate
-     * @throws MethodNotFound
-     */
-    protected function apply(DomainEventMessageInterface $domainEventMessage): EventSourcedAggregate
-    {
-        $this->getMethod($domainEventMessage, 'on')($domainEventMessage->getPayload());
-
-        return $this;
+        return new Stream($this->identifier, $this->version, $this->domainEventMessages);
     }
 
     /**
@@ -122,15 +105,18 @@ abstract class EventSourcedAggregate extends AbstractCommandHandler implements E
      * @param PayloadInterface $payload
      * @param array|null       $metaData
      * @throws MethodNotFound
+     * @throws Exception
      */
     protected function record(PayloadInterface $payload, array $metaData = null): void
     {
+        $this->version++;
+        
         $domainEventMessage = new DomainEventMessage(
             $payload,
             new PayloadType($payload),
             new DateTime(),
             $this->getIdentifier(),
-            $this->getNextVersion(),
+            $this->version,
             array_replace_recursive(
                 $this
                     ->getCommandMessage()
@@ -139,51 +125,21 @@ abstract class EventSourcedAggregate extends AbstractCommandHandler implements E
             )
         );
 
-        $this
-            ->apply($domainEventMessage)
-            ->addDomainEventMessage($domainEventMessage);
+        $this->apply($domainEventMessage);
+        $this->domainEventMessages[] = $domainEventMessage;
     }
 
     /**
-     * Add domain event message.
+     * Apply domain event message to aggregate.
      *
      * @param DomainEventMessageInterface $domainEventMessage
      * @return EventSourcedAggregate
+     * @throws MethodNotFound
      */
-    protected function addDomainEventMessage(DomainEventMessageInterface $domainEventMessage): EventSourcedAggregate
+    private function apply(DomainEventMessageInterface $domainEventMessage): EventSourcedAggregate
     {
-        $this->domainEventMessages[] = $domainEventMessage;
+        $this->getMethod($domainEventMessage, 'on')($domainEventMessage->getPayload());
 
         return $this;
-    }
-
-    /**
-     * Get recorded events.
-     *
-     * @return DomainEventMessageInterface[]
-     */
-    protected function getRecordedEvents(): array
-    {
-        return $this->domainEventMessages;
-    }
-
-    /**
-     * Get next aggregate version.
-     *
-     * @return int
-     */
-    protected function getNextVersion(): int
-    {
-        return ++$this->version;
-    }
-
-    /**
-     * If aggregate is already initialized.
-     *
-     * @return bool
-     */
-    protected function isInitialized(): bool
-    {
-        return $this->initialized;
     }
 }
